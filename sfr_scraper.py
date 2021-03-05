@@ -36,7 +36,7 @@ def sportfishing_scraper(wd, date):
     os.chdir(wd)
 
     chrome_options = webdriver.ChromeOptions() #initialize webdriver in chrome
-#    chrome_options.add_argument("--headless") #prevents opening a new Chrome window every time
+    chrome_options.add_argument("--headless") #prevents opening a new Chrome window every time
     chrome_options.add_argument("--window-size=1920x1080") #window size?
 
     #path to chromedriver.exe, need to make sure this is up to date for current version of chrome, self note to automate that
