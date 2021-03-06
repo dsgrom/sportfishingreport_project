@@ -83,21 +83,6 @@ df_check = pd.read_csv('sfr_data_cleaned.csv')
 
 
 
-#check boat_name and trip_type for duplicates/conslidate where possible
-#if possible and if I can find it, merge in (ideally daily by region) SST data
-#other oceanographic indicators that I can find (ideally daily by region) for free?
-#check for typos and look at value counts
-#some weird trip types?
-#one instance of 'Puget Sound', one instance of 'Florida South' (??), can maybe delete these rows
-
-#check for possible typos in boat_name and trip_type
-print(sorted(df2['boat_name'].unique().astype(str))) #no typos as far as I can see
-#might be able to consolidate some, need more research on what each trip type is and regional differences in names
-print(sorted(df2['trip_type'].unique().astype(str)))
-
-
-
-
 
 
 
