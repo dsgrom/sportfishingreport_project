@@ -5,8 +5,11 @@ Created on Fri Mar  5 10:19:20 2021
 @author: Kevin
 """
 
+import os
 import pandas as pd
 import numpy as np
+
+os.chdir("C:/Users/Kevin/Documents/Projects/Portfolio/sportfishingreport_project")
 
 df = pd.read_csv("sfr_data_20200101_20210303.csv")
 df2 = df.copy()
@@ -26,6 +29,10 @@ df.dtypes #check types, seems data imported as all strings
 #date2 as datetime type
 df2['date2'] = pd.to_datetime(df2['date'], format = '%Y-%m-%d')
 df2.dtypes
+df2['year'] = df2['date2'].apply(lambda x: x.year)
+df2['month'] = df2['date2'].apply(lambda x: x.month)
+df2['day'] = df2['date2'].apply(lambda x: x.day)
+df2['day_of_week'] = df2['date2'].apply(lambda x: x.strftime('%A'))
 
 
 
