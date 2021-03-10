@@ -11,7 +11,7 @@ import numpy as np
 
 os.chdir("C:/Users/Kevin/Documents/Projects/Portfolio/sportfishingreport_project")
 
-df = pd.read_csv("sfr_data_20200101_20210303.csv")
+df = pd.read_csv("sfr_data_20200101_20210309.csv")
 df2 = df.copy()
 df.dtypes #check types, seems data imported as all strings
 
@@ -69,7 +69,7 @@ restrictions.value_counts() #see unique values and how many of each there are
 df2['catch_count'] = pd.to_numeric(df2['catch3'].str.extract('(\d+)')[0], errors = 'coerce') #parse catch integer count to new column
 df2['catch_species'] = df2['catch3'].str.extract('(\D+)')[0] #parse catch species into new column
 df2['catch_species'] = df2['catch_species'].str.strip() #remove whitespace from species
-df2['catch_species'] = df2['catch_species'].apply(lambda x: x.lower().replace('released', "")) #lowercase all and remove 'released' from elements
+df2['catch_species'] = df2['catch_species'].apply(lambda x: x.lower().replace('released', "") if pd.notnull(x) else 0) #lowercase all and remove 'released' from elements
 
 
 
@@ -82,9 +82,9 @@ df2['trip_type'] = df2['trip_type'].astype(str).apply(lambda x: x.lower())
 
 
 #export to csv
-df2.to_csv('sfr_data_cleaned.csv', index = False)
+df2.to_csv('sfr_data_cleaned_test.csv', index = False)
 
-df_check = pd.read_csv('sfr_data_cleaned.csv')
+df_check = pd.read_csv('sfr_data_cleaned_test.csv')
 
 ################################################ end initial cleaning ##################################################
 

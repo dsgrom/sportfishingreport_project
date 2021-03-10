@@ -8,11 +8,11 @@ Created on Thu Mar  4 15:59:14 2021
 #run function sportfishScraper for date range, save to dataframe called 'data'
 
 import pandas as pd
-import sfr_scraper as sfs
+import sfr_scraper2 as sfs
 
 #inputs
 wd = "C:/Users/Kevin/Documents/Projects/Portfolio/sportfishingreport_project"
-date_list = pd.date_range('2020-01-01','2021-03-03')
+date_list = pd.date_range('2020-01-01','2021-03-09')
 
 
 #format dates properly
@@ -31,5 +31,5 @@ for day in date_list:
 
 
 #write to csv
-sfs.csv_writer(data, "sfr_data_20200101_20210303")
+sfs.csv_writer(data, "sfr_data_20200101_20210309")
 
