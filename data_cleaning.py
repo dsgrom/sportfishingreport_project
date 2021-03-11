@@ -82,9 +82,9 @@ df2['trip_type'] = df2['trip_type'].astype(str).apply(lambda x: x.lower())
 
 
 #export to csv
-df2.to_csv('sfr_data_cleaned_test.csv', index = False)
+df2.to_csv('sfr_data_cleaned.csv', index = False)
 
-df_check = pd.read_csv('sfr_data_cleaned_test.csv')
+df_check = pd.read_csv('sfr_data_cleaned.csv')
 
 ################################################ end initial cleaning ##################################################
 
