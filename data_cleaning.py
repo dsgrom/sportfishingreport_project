@@ -7,11 +7,15 @@ Created on Fri Mar  5 10:19:20 2021
 
 import os
 import pandas as pd
+import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
 
 os.chdir("C:/Users/Kevin/Documents/Projects/Portfolio/sportfishingreport_project")
 
 df = pd.read_csv("sfr_data_20200101_20210309.csv")
+#df = pd.read_csv("sfr_data_2019_FY.csv")
+
 df2 = df.copy()
 df.dtypes #check types, seems data imported as all strings
 
@@ -84,14 +88,191 @@ df2['trip_type'] = df2['trip_type'].astype(str).apply(lambda x: x.lower())
 #export to csv
 df2.to_csv('sfr_data_cleaned.csv', index = False)
 
-df_check = pd.read_csv('sfr_data_cleaned.csv')
-
 ################################################ end initial cleaning ##################################################
 
 
 
+################################################### addtl cleaning #####################################################
+
+#import cleaned data from part 1
+df_raw = pd.read_csv("sfr_data_cleaned.csv")
+df = df_raw.copy()
+
+#drop redundant columns
+df = df.drop(['date', 'catch', 'num_anglers'], axis = 1)
+df['restrictions_yn'] = df['restrictions'].apply(lambda x: 1 if pd.notnull(x) else 0)
+
+#remove the florida south, puget sound, lake tahoe, and delta ones since there's so little data
+location_list = ['florida south', 'puget sound', 'delta', 'lake tahoe']
+df.drop(df.loc[df['location'].isin(location_list)].index, inplace = True) #removes rows
+
+
+
+######################################### function to replace trip_type according to above notes #######################################
+def trip_type_simplifier(trip_type):
+    if trip_type == '2.75 day trip':
+        return 'multi-day trip'
+    elif trip_type == '1.75 day trip':
+        return '2 day trip'
+    elif trip_type == '12 hour':
+        return 'full day trip'
+    #elif trip_type == '4 day trip' or trip_type == '5 day trip':
+    elif trip_type in ['3 day trip', '3.5 day trip', '4 day trip', '5 day trip']:
+        return 'multi-day trip'
+    #elif trip_type == '4 hour' or trip_type == '5 hour' or trip_type == '6 hour':
+    elif trip_type in ['4 hour', '5 hour', '6 hour']:
+        return '1/2 day trip'
+    #elif trip_type == '7 hour' or trip_type == '8 hour':
+    elif trip_type in ['7 hour', '8 hour', '3/4 day local', '3/4 day islands']:
+        return '3/4 day trip'
+    elif trip_type == 'extended 1.5 day trip':
+        return '1.5 day trip'
+    elif trip_type in ['crab', 'crab combo', 'dungeness crab', 'dungeness crab am']:
+        return 'crabbing trip'
+    elif trip_type in ['salmon', 'salmon mooching', 'salmon trolling']:
+        return 'salmon trip'
+    elif trip_type in ['lobster', 'halibut', 'offshore halibut']:
+        return 'other trip'
+    elif trip_type == None:
+        return 'na'
+    else:
+        return trip_type
+
+##################################################### fixing species typos first ##############################################
+def species_typo_fixer(catch_species):
+    #fish
+    if 'rockcod' in catch_species:
+        return catch_species.replace('rockcod', 'rockfish')
+    elif 'vermillion' in catch_species:
+        return catch_species.replace('vermillion', 'vermilion')
+    elif catch_species == 'salmon grouper':
+        return 'bocaccio'
+    elif catch_species == 'chilipepper':
+        return 'chilipepper rockfish'
+    elif catch_species == 'kelp bass':
+        return 'calico bass'
+    elif catch_species == 'barred sand bass':
+        return 'sand bass'
+    elif catch_species == 'blacksmith':
+        return 'blacksmith perch'
+    elif 'halfmoon' in catch_species:
+        return 'blue perch'
+    elif catch_species == 'ocean whitefish':
+        return 'whitefish'
+    elif catch_species in ['chinook salmon', 'chinoook salmon']:
+        return 'king salmon'
+    elif catch_species == 'mahi mahi':
+        return 'dorado'
+    elif catch_species == 'california yellowtail':
+        return 'yellowtail'
+    elif catch_species == 'california barracuda':
+        return 'barracuda'
+    elif 'bonito' in catch_species:
+        return 'bonito'
+    elif 'albacore' in catch_species:
+        return 'albacore tuna'
+    elif catch_species == 'giant seabass':
+        return 'black seabass'
+    elif catch_species == 'whote seabass':
+        return 'white seabass'
+
+    #not sure about these two
+    elif catch_species == 'spanish jack':
+        return 'jack mackerel'
+    elif catch_species == 'spanish mackerel':
+        return 'mackerel'
+    
+    #crab
+    elif catch_species == 'dungeoness crab':
+        return 'dungeness crab'
+    elif catch_species == 'red rock crab':
+        return 'rock crab'
+    
+    #shark
+    elif 'dog' in catch_species:
+        return 'spiny dogfish shark'
+    
+    else:
+        return catch_species
+
+
+
+############################################ function to replace catch_species #######################################
+def species_generalizer(catch_species):
+    #fish
+    #rockfish
+    if 'rockfish' in catch_species:
+        return 'rockfish'
+    if catch_species in ['bocaccio', 'bolina', 'treefish']: #also rockfish
+        return 'rockfish'
+    #bass, should not include white and black seabass, other huge basses
+    elif catch_species in ['calico bass', 'kelp bass', 'sand bass', 'barred sand bass', 'striped bass', 'spotted bay bass', 'spotted sand bass']:
+        return 'bass'
+    #perch
+    elif 'perch' in catch_species:
+        return 'perch'
+    #salmon
+    elif catch_species in ['king salmon', 'silver salmon', 'coho salmon', 'pink salmon', 'chum salmon']:
+        return 'salmon'
+    #halibut
+    elif 'halibut' in catch_species:
+        return 'halibut'
+    #tuna
+    elif catch_species in ['yellowfin tuna', 'bigeye tuna', 'bluefin tuna', 'skipjack tuna', 'albacore tuna']:
+        return 'tuna'
+    #CHECK THIS ONE TO MAKE SURE IT WORKS
+    #swordfish and marlin
+    elif 'swordfish' in catch_species or 'marlin' in catch_species:
+        return 'billfish'
+    
+    #baitfish
+    elif 'mackerel' in catch_species:
+        return 'baitfish'
+
+    #sharks
+    elif 'shark' in catch_species:
+        return 'shark'
+
+    
+    #crab
+    elif 'crab' in catch_species:
+        return 'crab'
+    
+    #other
+    elif catch_species in ['black croaker', 'sargo', 'black seabass', 'billfish', 'white sturgeon', 'sand sole', 'fantail sole', \
+                           'mexican scad', 'wolf eel', 'kelp greenling', 'white croaker', 'starry flounder', 'flounder', 'bat ray', \
+                           'bonefish', 'octopus', 'diamond turbot', 'opah', 'yellowfin croaker', 'sunfish', 'brown smoothhound', \
+                           'broomtail grouper', 'snowy grouper']:
+        return 'other'
+
+    #to catch others and na's, but wonder if i can replace above with the below as else return other?
+    else:
+        return catch_species
+    
+    
+
+################################################### applying above functions: #################################################
+#simplify trip type
+df['trip_type'] = df['trip_type'].apply(trip_type_simplifier)
+
+#strip leading/trailing whitespace from catch_species
+df.catch_species = df.catch_species.apply(lambda x: x.strip() if pd.notnull(x) else x)
+#fix species typos
+df['catch_species'] = df['catch_species'].apply(lambda x: species_typo_fixer(x) if pd.notnull(x) else x)
+
+#run catch_species through generalizer
+df['catch_species_general'] = df['catch_species'].apply(lambda x: species_generalizer(x) if pd.notnull(x) else x)
+
+
+
+#export to csv
+df.to_csv('sfr_data_cleaned_v2.csv', index = False)
+#df.to_csv('sfr_data_cleaned_2019.csv', index = False)
 
 
 
 
 
+
+    
+    

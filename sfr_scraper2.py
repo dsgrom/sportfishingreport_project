@@ -111,7 +111,7 @@ def sportfishing_scraper(wd, date):
                 
                 df = df.append(temp)
             except: #need to find breakpoint code instead of try except
-                print("well that didn't work...")
+                print("no data")
         
     driver.close()
     return df;
